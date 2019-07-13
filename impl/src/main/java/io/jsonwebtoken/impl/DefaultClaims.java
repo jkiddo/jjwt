@@ -15,9 +15,11 @@
  */
 package io.jsonwebtoken.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.RequiredTypeException;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
@@ -155,6 +157,16 @@ public class DefaultClaims extends JwtMap implements Claims {
                 value = (short) intValue;
             } else if (requiredType == Byte.class && Byte.MIN_VALUE <= intValue && intValue <= Byte.MAX_VALUE) {
                 value = (byte) intValue;
+            }
+        }
+        else {
+            try {
+                if(value instanceof String)
+                    value = new ObjectMapper().readValue((String)value,requiredType);
+                else
+                    value = new ObjectMapper().convertValue(value,requiredType);
+            } catch (IllegalArgumentException | IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
             }
         }
 
